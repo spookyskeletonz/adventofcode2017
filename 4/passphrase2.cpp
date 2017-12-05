@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <map>
+#include <unordered_set>
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -12,17 +12,20 @@ int main(int argc, char **argv){
   while(std::getline(infile, line)){
     std::istringstream iss(line);
     std::string word;
-    std::map<std::vector<int>, int> words;
+    std::unordered_set<std::string> words;
     bool isPhrase = true;
     while(iss >> word){
       std::vector<int> wordVec(26);
       for(int i = 0; i < word.length(); ++i){
         wordVec[word[i]-97]++;
       }
-      if(words.find(wordVec) != words.end()){
+      std::string s;
+      for(int i : wordVec)
+        s = s + std::to_string(i);
+      if(words.find(s) != words.end()){
         isPhrase = false;
       }
-      else words.insert(std::make_pair(wordVec, 1));
+      else words.insert(s);
     }
     if(isPhrase) count++;
   }

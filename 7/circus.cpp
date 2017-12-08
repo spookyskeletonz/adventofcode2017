@@ -1,4 +1,4 @@
-#include<set>
+#include<vector>
 #include<unordered_map>
 #include<iostream>
 #include<fstream>
@@ -8,13 +8,16 @@
 
 struct Node{
     std::string name;
-    std::string parent = "";
+    std::string parent;
     int weight;
-    std::set<std::string> children;
+    std::vector<std::string> children;
 };
 
-std::unordered_map<std::string, Node*> nameToNodeMap;
-std::set<Node> nodes;
+std::unordered_map<std::string, Node> nameToNodeMap;
+
+void createOrEditNode(std::string, int, std::vector<std::string>);
+void createOrEditChildNodes(std::string, std::vector<std::string>);
+std::string findBase();
 
 int main(int argc, char **argv){
     std::ifstream infile(argv[1]);
@@ -28,8 +31,8 @@ int main(int argc, char **argv){
         std::regex s2("\\).*$");
         sweight = std::regex_replace(sweight, s2, "");
         int weight = std::stoi(sweight);
-        std::regex c("^.*->");
-        std::set<std::string> childs;
+        std::regex c("^.*-> ");
+        std::vector<std::string> childs;
         if(std::regex_search(line, c)){
             std::string children = std::regex_replace(line, c , "");
             std::string delimiter = ", ";
@@ -37,45 +40,59 @@ int main(int argc, char **argv){
             std::string token;
             while((pos = children.find(delimiter)) != std::string::npos){
                 token = children.substr(0, pos);
-                childs.insert(token);
+                childs.push_back(token);
                 children.erase(0, pos + delimiter.length());
             }
+            //last token left over cant be bothered to format it more lol
+            childs.push_back(children);
         }
+
+        createOrEditNode(name, weight, childs);
+        createOrEditChildNodes(name, childs);
         
-        //create or edit node
-        if(nameToNodeMap.find(name) != nameToNodeMap.end()){
-            Node *node = nameToNodeMap[name];
-            node->weight = weight;
-            node->children = childs;
-        } else {
-            Node *newNode = new Node;
-            newNode->name = name;
-            newNode->weight = weight;
-            newNode->children = childs;
-            nodes.insert(newNode);
-            nameToNodeMap.insert(std::make_pair(name, newNode));
-        }
-
-        //create childs if not exist or edit if do exist
-        for(std::string child : childs){
-            if(nameToNodeMap.find(child) != nameToNodeMap.end()){
-                Node *node = nameToNodeMap[child];
-                node->parent = name;
-            } else {
-                Node *newNode = new Node;
-                newNode->name = child;
-                newNode->parent = name; 
-                nodes.insert(newNode);
-                nameToNodeMap.insert(std::make_pair(child, newNode));
-            }
-        }
-
-    }
+   }
 
     //now we have constructed tree time to find base node
-    Node *base;
-    for(Node *current : nodes){
-        if(current.parent = "") base = current;
+   std::cout << "base: " << findBase() << "\n";
+}
+
+std::string findBase(){
+    std::string base;
+    Node current;
+    for(auto it : nameToNodeMap){
+        current = it.second;
+        if(current.parent == ""){
+            base = current.name; 
+        }
     }
-    std::cout << base->name << "\n";
+    return base; 
+}
+
+void createOrEditNode(std::string name, int weight, std::vector<std::string> childs){
+    //create or edit node
+    if(nameToNodeMap.find(name) != nameToNodeMap.end()){
+        Node *node = &nameToNodeMap[name];
+        node->weight = weight;
+        node->children = childs;
+    } else {
+        Node newNode;
+        newNode.name = name;
+        newNode.weight = weight;
+        newNode.children = childs;
+        nameToNodeMap.insert(std::make_pair(name, newNode));
+    }
+}
+
+void createOrEditChildNodes(std::string name, std::vector<std::string> childs){
+    //create childs if not exist or edit if do exist
+    for(std::string child : childs){
+        if(nameToNodeMap.find(child) != nameToNodeMap.end()){
+            nameToNodeMap[child].parent = name;
+        } else {
+            Node newNode;
+            newNode.name = child;
+            newNode.parent = name; 
+            nameToNodeMap.insert(std::make_pair(child, newNode));
+        }
+    }
 }

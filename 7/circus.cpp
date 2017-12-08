@@ -47,12 +47,13 @@ int main(int argc, char **argv){
             childs.push_back(children);
         }
 
+        //create/edit nodes and childs for this line
         createOrEditNode(name, weight, childs);
         createOrEditChildNodes(name, childs);
         
    }
 
-    //now we have constructed tree time to find base node
+    //now we have constructed all nodes time to find base node
    std::cout << "base: " << findBase() << "\n";
 }
 

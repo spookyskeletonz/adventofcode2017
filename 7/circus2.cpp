@@ -117,7 +117,6 @@ int populateTotalWeights(std::string current){
 }
 
 int findImbalance(std::string current, int expectedWeight){
-    //todo: implement case for 2 that are unequal
     if(nameToNodeMap[current].children.size() > 2){
         int first = nameToNodeMap[nameToNodeMap[current].children[0]].totalWeight;
         int temp = first;

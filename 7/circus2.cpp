@@ -62,9 +62,10 @@ int main(int argc, char **argv){
     std::cout << "base: " << base << "\n";
 
     //now we will populate all the totalWeights at each plate. the total weight is the sum of the plate plus the plates above
-    std::cout << "total weight of all plates: " << populateTotalWeights(base);
+    std::cout << "total weight of all plates: " << populateTotalWeights(base) << "\n";
 
     //now we have to find the imbalanced plate and get the value it should be
+    std::cout << "proper weight of imbalanced plate: " << findImbalance(base, 0) << "\n";
 }
 
 std::string findBase(){
@@ -118,20 +119,46 @@ int populateTotalWeights(std::string current){
 int findImbalance(std::string current, int expectedWeight){
     //todo: implement case for 2 that are unequal
     if(nameToNodeMap[current].children.size() > 2){
-        int first = nameToNodeMap[current].children[0].totalWeight;
+        int first = nameToNodeMap[nameToNodeMap[current].children[0]].totalWeight;
         int temp = first;
         for(std::string child : nameToNodeMap[current].children){
-            if(nameToNodeMap[child].totalWeight != first && child = nameToNodeMap[current].children[1]) temp = nameToNodeMap[child].totalWeight; 
+            if(nameToNodeMap[child].totalWeight != first && child == nameToNodeMap[current].children[1]) temp = nameToNodeMap[child].totalWeight; 
             else if(nameToNodeMap[child].totalWeight != first && nameToNodeMap[child].totalWeight == temp)
-                return findImbalance(nameToNodeMap[current].children[0].name, temp)
+                return findImbalance(nameToNodeMap[current].children[0], temp);
             else if(nameToNodeMap[child].totalWeight == first && nameToNodeMap[child].totalWeight != temp)
-                return findImbalance(nameToNodeMap[current].children[1].name, first);
+                return findImbalance(nameToNodeMap[current].children[1], first);
             else if(nameToNodeMap[child].totalWeight != first && nameToNodeMap[child].totalWeight != temp)
                 return findImbalance(child, first);
         }
-    } else if(nameToNodeMap[current].children.size() == 2){
-        
+    } else if(nameToNodeMap[current].children.size() == 2 && nameToNodeMap[nameToNodeMap[current].children[0]].totalWeight != nameToNodeMap[nameToNodeMap[current].children[1]].totalWeight){
+        //we check each for if either have imbalance plates, if they do we go into there. if neither do we return one of them
+        int first = nameToNodeMap[nameToNodeMap[nameToNodeMap[current].children[0]].children[0]].totalWeight;
+        int temp = first;
+        for(std::string child : nameToNodeMap[nameToNodeMap[current].children[0]].children){
+            if(nameToNodeMap[child].totalWeight != first && child == nameToNodeMap[nameToNodeMap[current].children[0]].children[1]) temp = nameToNodeMap[child].totalWeight; 
+            else if(nameToNodeMap[child].totalWeight != first && nameToNodeMap[child].totalWeight == temp)
+                return findImbalance(nameToNodeMap[current].children[0], temp);
+            else if(nameToNodeMap[child].totalWeight == first && nameToNodeMap[child].totalWeight != temp)
+                return findImbalance(nameToNodeMap[current].children[1], first);
+            else if(nameToNodeMap[child].totalWeight != first && nameToNodeMap[child].totalWeight != temp)
+                return findImbalance(child, first);
+        }
+        first = nameToNodeMap[nameToNodeMap[nameToNodeMap[current].children[1]].children[0]].totalWeight;
+        temp = first;
+        for(std::string child : nameToNodeMap[nameToNodeMap[current].children[1]].children){
+            if(nameToNodeMap[child].totalWeight != first && child == nameToNodeMap[nameToNodeMap[current].children[1]].children[1]) temp = nameToNodeMap[child].totalWeight; 
+            else if(nameToNodeMap[child].totalWeight != first && nameToNodeMap[child].totalWeight == temp)
+                return findImbalance(nameToNodeMap[current].children[0], temp);
+            else if(nameToNodeMap[child].totalWeight == first && nameToNodeMap[child].totalWeight != temp)
+                return findImbalance(nameToNodeMap[current].children[1], first);
+            else if(nameToNodeMap[child].totalWeight != first && nameToNodeMap[child].totalWeight != temp)
+                return findImbalance(child, first);
+        }
+        return nameToNodeMap[nameToNodeMap[current].children[0]].weight > nameToNodeMap[nameToNodeMap[current].children[1]].weight ? nameToNodeMap[nameToNodeMap[current].children[0]].weight : nameToNodeMap[nameToNodeMap[current].children[1]].weight;
     }
-    return std::abs(nameToNodeMap[current].totalWeight - expectedWeight);
+    if(nameToNodeMap[current].totalWeight > expectedWeight)
+        return nameToNodeMap[current].weight - std::abs(nameToNodeMap[current].totalWeight - expectedWeight);
+    else
+        return nameToNodeMap[current].weight + std::abs(nameToNodeMap[current].totalWeight - expectedWeight);
 }
 
